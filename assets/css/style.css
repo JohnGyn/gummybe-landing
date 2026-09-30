@@ -1969,3 +1969,37 @@ main { overflow-x: clip; }
 @media (max-width: 900px) {
   .ba-grid { grid-template-columns: 1fr; max-width: 460px; margin-inline: auto; }
 }
+
+/* FAQ: multi-paragraph answers + allergen statement (as on the label) */
+.faq__a p + p { margin-top: -12px; }
+.faq__allergens {
+  padding: 12px 16px !important;
+  margin-bottom: 24px;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  color: var(--ink) !important;
+  font-size: .9rem;
+  line-height: 1.45;
+  letter-spacing: .01em;
+}
+.faq__allergens em { font-style: italic; text-transform: none; }
+
+/* nutrition: nested sugar row + ingredients */
+.nutri tr.sub2 th { padding-left: 38px; font-weight: 500; color: var(--ink-soft); }
+.nutri__ingredients { display: grid; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.nutri__ingredients h3 {
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+.nutri__ingredients p { font-size: .82rem; line-height: 1.6; color: var(--ink-soft); }
+.nutri__allergens {
+  padding: 10px 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  color: var(--ink) !important;
+  font-size: .8rem !important;
+  line-height: 1.45 !important;
+}
+@media (max-width: 520px) { .nutri tr.sub2 th { padding-left: 26px; } }
