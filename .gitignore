@@ -3,3 +3,6 @@ gen/
 .claude/
 __pycache__/
 .DS_Store
+.vercel/
+.vercel
+.env*
