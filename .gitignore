@@ -1,0 +1,5 @@
+# imagens-fonte do Codex (pesadas); as otimizadas ficam em assets/img
+gen/
+.claude/
+__pycache__/
+.DS_Store
