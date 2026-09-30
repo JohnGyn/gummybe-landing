@@ -216,7 +216,7 @@
         value: parseFloat(input.dataset.price),
         currency: 'BRL',
         num_items: parseInt(input.value, 10),
-        content_name: `GummyBe ${input.value} pote(s) + livreto`,
+        content_name: `GummyBe ${input.value} pote(s) + checklist diário`,
       });
     });
     update(false);
@@ -300,6 +300,84 @@
 
     syncDots();
   });
+
+  /* ---------- Before / after comparison ---------- */
+  document.querySelectorAll('[data-ba]').forEach((ba) => {
+    const range = ba.querySelector('.ba__range');
+    const set = (v) => ba.style.setProperty('--pos', `${v}%`);
+    range.addEventListener('input', () => set(range.value));
+
+    // pointer drag (mouse + touch); the range input stays for keyboard users
+    const fromPointer = (e) => {
+      const r = ba.getBoundingClientRect();
+      const v = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+      range.value = v;
+      set(v.toFixed(1));
+    };
+    let dragging = false;
+    ba.addEventListener('pointerdown', (e) => {
+      dragging = true;
+      range.dataset.touched = '1';
+      ba.setPointerCapture(e.pointerId);
+      fromPointer(e);
+    });
+    ba.addEventListener('pointermove', (e) => { if (dragging) fromPointer(e); });
+    const end = () => { dragging = false; };
+    ba.addEventListener('pointerup', end);
+    ba.addEventListener('pointercancel', end);
+
+    // a gentle "peek" the first time it scrolls into view, hinting that it is draggable
+    if (reduceMotion || !('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) return;
+      io.disconnect();
+      const frames = [50, 70, 30, 50];
+      let k = 0;
+      const tick = () => {
+        if (k >= frames.length || range.dataset.touched) return;
+        ba.style.transition = 'none';
+        const from = parseFloat(getComputedStyle(ba).getPropertyValue('--pos')) || 50;
+        const to = frames[k++];
+        const t0 = performance.now();
+        const step = (now) => {
+          if (range.dataset.touched) return;
+          const p = Math.min(1, (now - t0) / 700);
+          const e = p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+          const v = from + (to - from) * e;
+          set(v.toFixed(1)); range.value = v;
+          if (p < 1) requestAnimationFrame(step); else setTimeout(tick, 120);
+        };
+        requestAnimationFrame(step);
+      };
+      setTimeout(tick, 500);
+    }, { threshold: 0.6 });
+    io.observe(ba);
+  });
+
+  /* ---------- Testimonials: "ler mais" only where the text is clamped ---------- */
+  const testimonials = [...document.querySelectorAll('.testimonial')].map((card) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'testimonial__more';
+    btn.textContent = 'ler mais';
+    btn.setAttribute('aria-expanded', 'false');
+    btn.hidden = true;
+    btn.addEventListener('click', () => {
+      const open = card.classList.toggle('is-open');
+      btn.textContent = open ? 'ler menos' : 'ler mais';
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    card.appendChild(btn);
+    return { card, btn, quote: card.querySelector('blockquote') };
+  });
+  const checkClamp = () => testimonials.forEach(({ card, btn, quote }) => {
+    if (card.classList.contains('is-open')) return;
+    btn.hidden = quote.scrollHeight <= quote.clientHeight + 2;
+  });
+  checkClamp();
+  document.fonts?.ready.then(checkClamp);
+  let clampTimer;
+  window.addEventListener('resize', () => { clearTimeout(clampTimer); clampTimer = setTimeout(checkClamp, 150); }, { passive: true });
 
   /* ---------- Year ---------- */
   const year = document.querySelector('[data-year]');

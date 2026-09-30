@@ -71,6 +71,38 @@ def main() -> None:
             total_out += out.stat().st_size
             print(f"{out.name:28s} {w}x{h}  {out.stat().st_size / 1024:6.1f} KB")
 
+    # fotos de clientes ("recebidos"), baixadas do site antigo
+    for src in sorted((SRC / "recebidos").glob("r[0-9]*.png")):
+        im = Image.open(src).convert("RGB")
+        total_in += src.stat().st_size
+        for w in (320, 560):
+            h = round(im.height * w / im.width)
+            out = OUT / f"recebido-{src.stem[1:]}-{w}.webp"
+            im.resize((w, h), Image.LANCZOS).save(out, "WEBP", quality=76, method=6)
+            total_out += out.stat().st_size
+            print(f"{out.name:28s} {w}x{h}  {out.stat().st_size / 1024:6.1f} KB")
+
+    # antes & depois (Codex) — imagens ilustrativas
+    for src in sorted((SRC / "ba").glob("*-*.png")):
+        im = Image.open(src).convert("RGB")
+        total_in += src.stat().st_size
+        for w in (400, 640):
+            out = OUT / f"ba-{src.stem}-{w}.webp"
+            im.resize((w, w), Image.LANCZOS).save(out, "WEBP", quality=78, method=6)
+            total_out += out.stat().st_size
+            print(f"{out.name:28s} {w}x{w}  {out.stat().st_size / 1024:6.1f} KB")
+
+    # avatares dos depoimentos (Codex)
+    for src in sorted((SRC / "avatars").glob("*.png")):
+        im = Image.open(src).convert("RGB")
+        side = min(im.size)
+        im = im.crop(((im.width - side) // 2, (im.height - side) // 2, (im.width + side) // 2, (im.height + side) // 2))
+        total_in += src.stat().st_size
+        out = OUT / f"avatar-{src.stem}.webp"
+        im.resize((96, 96), Image.LANCZOS).save(out, "WEBP", quality=80, method=6)
+        total_out += out.stat().st_size
+        print(f"{out.name:28s} 96x96  {out.stat().st_size / 1024:6.1f} KB")
+
     # favicon + og image
     bear = trim_alpha(Image.open(SRC / "gummy-bear.png"))
     bear.thumbnail((180, 180), Image.LANCZOS)
